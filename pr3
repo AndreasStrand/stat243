@@ -1,0 +1,19 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{float}
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+\noindent \textbf{The result of your solution to Problem 3 should look like this page} \\
+
+\noindent The height of the water level in Lake Huron fluctuates over time. Here I 'analyze' the variation using R. I show a histogram of the lake levels for the period \Sexpr{1875} to \Sexpr{1972}.
+<<a>>=
+hist(LakeHuron)
+@
+\begin{figure}[htb]
+\includegraphics[width = 0.5\textwidth]{Rplot1}
+\end{figure}
+<<c>>=
+lowHi <- c(which.min(LakeHuron), which.max(LakeHuron))
+yearExtrema <- attributes(LakeHuron)$tsp[1]-1 + lowHi
+@
+\end{document}
