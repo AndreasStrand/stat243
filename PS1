@@ -1,0 +1,58 @@
+###################### ps1 #################################
+#### Problem 1a ####
+# Changing to a directory with files of ps1
+mkdir ps1
+cd ps1
+
+# Downloading file directly via URL using wget
+wget "http://data.un.org/Handlers/DownloadHandler.ashx?DataFilter=itemCode:526&DataMartId=FAO&Format=csv&c=2,3,4,5,6,7&s=countryName:asc,elementCode:asc,year:desc" -O temp.zip; unzip temp.zip;rm temp.zip
+
+# Renaming the .csv-file with unknown name using filename globbing.
+# Cleaning up unwanted commas and quotation mars
+mv *.csv temp.csv
+sed 's/, /- /g' temp.csv | sed 's/"//g' > apricots.csv;rm temp.csv
+
+# Extracting regions and countries separately
+grep \+ apricots.csv > regions.csv
+grep -v \+ apricots.csv > countries.csv
+
+# Extracting the values in 2005 for Area Harvested
+grep Area.*2005 countries.csv > 2005.csv
+# After running this commando I had to make sure that all year values were 2005, since 2005 could occur in another field.
+
+# Sorting by column 6 and printing the top 5 with top contry at bottom
+sort -t',' -n -k6 2005.csv | cut -d',' -f1 > sorted.csv
+tail -n 5 sorted.csv
+
+# Checking top 5 for other years
+years=(1965 1975 1985 1995 2005)
+for y in ${years[@]}
+do
+    grep Area.*$y countries.csv > year.csv
+    sort -t',' -n -k6 year.csv | cut -d',' -f1 > s.csv
+    echo Top 5 in year $y:
+    tail -n 5 s.csv
+    echo 
+done
+# The top 5 list changes a lot from one decade to another
+    
+#### Problem 1b ####
+# Nb: This function does not work as intended
+# Tries to use a varible in the wget link and after clean the .csv-file of unwanted symbols
+function collect
+{
+wget "http://data.un.org/Handlers/DownloadHandler.ashx?DataFilter=itemCode:$1&DataMartId=FAO&Format=csv&c=2,3,4,5,6,7&s=countryName:asc,elementCode:asc,year:desc" | unzip | sed 's/, /- /g' temp.csv | sed 's/"//g'
+}
+
+#### Problem 2 ####
+The idea here was to search through the html-file for .txt-files. I looked at how the quotation marks were placed in order to extract the filenames
+wget www1.ncdc.noaa.gov/pub/data/ghcn/daily/
+grep -e \.txt index.html > rows.txt
+cut -d'"' -f8 rows.txt > names.txt
+
+cat names.txt | while read line
+do
+    echo $line.txt is downloading:
+    wget www1.ncdc.noaa.gov/pub/data/ghcn/daily/$line -O $line
+    echo 
+done
