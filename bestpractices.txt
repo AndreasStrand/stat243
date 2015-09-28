@@ -1,0 +1,1 @@
+Will there be exercises in the Statistical Computing course that includes normalizing tables in a database and merging such tables in order to do computations?
