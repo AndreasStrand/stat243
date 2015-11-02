@@ -1,0 +1,94 @@
+# Bash code
+
+#### Logon to spark ####
+export NUMBER_OF_WORKERS=12
+cd ~/Documents/stat243/spark-1.5.1/ec2
+export AWS_ACCESS_KEY_ID=`grep aws_access_key_id ~/Documents/stat243/stat243-fall-2015-credentials.boto | cut -d' ' -f3`
+export AWS_SECRET_ACCESS_KEY=`grep aws_secret_access_key ~/Documents/stat243/stat243-fall-2015-credentials.boto | cut -d' ' -f3`
+chmod 400 ~/Documents/stat243/.ssh/stat243-fall-2015-ssh_key.pem
+
+./spark-ec2 -k andrstra@stud.ntnu.no:stat243-fall-2015 -i ~/Documents/stat243/.ssh/stat243-fall-2015-ssh_key.pem --region=us-west-2 -s ${NUMBER_OF_WORKERS} -v 1.5.1 launch sparkvm-andrstra@stud.ntnu.no
+./spark-ec2 -k andrstra@stud.ntnu.no:stat243-fall-2015 -i ~/Documents/stat243/.ssh/stat243-fall-2015-ssh_key.pem --region=us-west-2 login sparkvm-andrstra@stud.ntnu.no
+# terminating later using
+./spark-ec2 --region=us-west-2 --delete-groups destroy sparkvm-andrstra@stud.ntnu.no
+
+
+#### In spark ####
+#### This section is containing pseudo code for problem 2
+# Columns of airline data
+ [1] "Year"              "Month"             "DayofMonth"       
+ [4] "DayOfWeek"         "DepTime"           "CRSDepTime"       
+ [7] "ArrTime"           "CRSArrTime"        "UniqueCarrier"    
+[10] "FlightNum"         "TailNum"           "ActualElapsedTime"
+[13] "CRSElapsedTime"    "AirTime"           "ArrDelay"         
+[16] "DepDelay"          "Origin"            "Dest"             
+[19] "Distance"          "TaxiIn"            "TaxiOut"          
+[22] "Cancelled"         "CancellationCode"  "Diverted"         
+[25] "CarrierDelay"      "WeatherDelay"      "NASDelay"         
+[28] "SecurityDelay"     "LateAircraftDelay"
+
+## Creating directories
+export PATH=$PATH:/root/ephemeral-hdfs/bin/
+hadoop fs -mkdir /data
+hadoop fs -mkdir /data/airline
+df -h
+mkdir /mnt/airline
+
+## Loading the airline data onto an HDFS
+for i in `seq 1987 2008`;
+do
+	wget "http://www.stat.berkeley.edu/share/paciorek/$i.csv.bz2
+done
+hadoop fs -copyFromLocal /mnt/airline/*bz2 /data/airline
+# Check files on the HDFS
+hadoop fs -ls /data/airline
+
+## Installing numpy and running pyspark
+yum install -y python27-pip python27-devel
+pip-2.7 install 'numpy==1.9.2'
+export PATH=$PATH:/root/spark/bin
+pyspark
+from operator import add
+import numpy as np
+
+## Creating an RDD "lines"
+lines = sc.textFile('/data/airline')
+numLines = lines.count()
+def stratify(line)
+    vals = line.split(',')
+    return = (vals[16], 1)
+result = lines.map(stratify).reduceByKey(add).collect()
+
+## Filter subset so it does not contain missing or unreasonable values for
+# departure delay. Also repartitioning data such that it is equally spread across
+# the twelve worker nodes
+lines.filter(lambda line: (!NA >=0 and <300) in line.split(',')[16]).repartition(12)
+
+## Aggregating information to categories
+# airline, departure airport, arrival airport, calendar month, day of week, hour of day of scheduled  dep. time
+# column numbers: 11, 17, 18, 2, 4, 5 
+# (for the last element take floor(<val 5>/100) to get the hour of the scheduled dep.time)
+def computeKeyValue(line):
+    vals = line.split(',')
+    keyArr = [vals[x] for x in [11,17,18,2,4,5]]
+    keyArr[5] = floor(keyArr[5]/100)
+    # Creating key by joining column values by hyphen
+    keyVals = '-'.join(keyArr)
+    delay30 = (vals[16]>=30)
+    delay60 = (vals[16]>=60)
+    delay180 = (vals[16]>=180)
+    return(keyVals, delay30, delay60, delay180)
+
+# I am not sure about details in reduce by key, but the plan is that since
+# delay30, delay60 and delay180 is boolean the average is the same as the share.
+# Furthermore if the reduction for each key is recursive by the structure 
+# mean(mean(mean(a),b),c) I think it could work with the lambda suggested
+avlambda = lambda v1,v2: numpy.average(v1,v2)
+newRDD = lines.map(computeKeyValue).reduceByKey(avlambda)
+
+## Saving the aggregated data set onto the master node
+def strat(line):
+    changedLine = *change to comma-delimittid char. string*
+    return(changedLine)
+newRDD.lines.map(strat).groupByKey().saveAsTextFile('/data/delayOverview')
+
