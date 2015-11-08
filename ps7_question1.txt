@@ -1,0 +1,48 @@
+1. Chen, Li and Fu want to find a procedure of doing hypothesis testing on the 
+order of a normal mixture model. They invent a new expectation-maximazation 
+(EM) for testing the null hypothesis. The power of the EM tests are used 
+as a measure to assess the method.
+
+2. For the simulation study of the EM test the set B (Beta), number of 
+Iterations K (Kappa) and the penalty functions have to be specified. The 
+significance level, the sample sizes and the number of repetitions are likely 
+to affect the power of the test.
+
+3. It is of course possible to test other choices of m, and not only 2 and 3.
+This is however something they considered for sure. I would be interesting to 
+see some other choices of B though. In this exampe they chose B={0.1,0.3,0.5}.
+
+4. First we would make clear what parameters that has to be decided for an 
+individual experiment and what the statistic is. Here the statistic is the EM,
+and there is a whole bunch of parameters as mentioned above. The next thing to 
+do is specifying test levels of each parameter. Then we would write a function 
+taking a level of every parameter as input and returning a value of the test 
+statistic. For each input combination we want to replicate the experiment m
+times. This may be done by parallell processing for big data sets. Furthermore, 
+we gather the data of each process into a data structure and present clearly in
+either a table or a graphical figure. It is impotant to share code, levels, the 
+seed and other data needed in order to reproduce the data. Other things to 
+consider is reporting uncertainty, write efficient code and have good 
+documentation. 
+
+5. For the plot of type 1 errors they did a clever thing by showing the four 
+combinations of n in {200, 400} and significance level in {0.01, 0.05} in a 2x2 
+grid. That way it easy to compare levels seperately or sample size separetely 
+by staring at the figure. However, I think they could have presented the 
+parameter specifications better. It would be nice to have the specifications of 
+the null models and of the alternative models next to each other. A way of 
+doing that may be listing the parameter sets in one table and use horisontal 
+lines to seperate. Still, it could be messy because of the EM power entries. 
+
+6. It makes sense how the power varies with the DGM. The power is without 
+exception equal or increasing as the sample size or repetitions increases. The 
+slope of the change in power varies by model.
+
+7. I looked into replication code at http://sas.uwaterloo.ca/~p4li/software/
+emnorm.R. I did not find sufficient information about the PRNG in the code 
+there, but I may have overlooked a note somewhere about where to find it. Also 
+the JASA requirements include information about computers and major software 
+components, but I cannot find that anywhere in the publication. It seems like 
+satisfy all the other requirements. That includes information about the general 
+procedure, the numerical agoritms, programming languages, estimated accuracy 
+and clarity in presenting the result.
